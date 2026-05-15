@@ -100,6 +100,22 @@ INSERT INTO bookings (event_id, equipment_id, status) VALUES
 (5, 5, 'pending');
 
 -- =====================================================
+-- ACTUALIZAR TELÉFONO DE CLIENTE
+-- =====================================================
+
+UPDATE clients
+SET phone = '3119999999'
+WHERE client_id = 3;
+
+-- =====================================================
+-- ACTUALIZAR ESTADO DE EQUIPO
+-- =====================================================
+
+UPDATE equipment
+SET status = 'maintenance'
+WHERE equipment_id = 2;
+
+-- =====================================================
 -- CONSULTAR CLIENTES
 -- =====================================================
 
@@ -128,7 +144,8 @@ SELECT
     equipment_id AS id_equipo,
     name AS nombre_equipo,
     category AS categoria,
-    quantity AS cantidad
+    quantity AS cantidad,
+    status AS estado
 FROM equipment;
 
 -- =====================================================
@@ -163,6 +180,17 @@ SELECT
     status
 FROM equipment
 WHERE status = 'maintenance';
+
+-- =====================================================
+-- CONSULTAR EVENTOS ORDENADOS
+-- =====================================================
+
+SELECT
+    event_id,
+    name,
+    event_date
+FROM events
+ORDER BY event_date ASC;
 
 -- =====================================================
 -- CONTAR EVENTOS POR CLIENTE
@@ -203,11 +231,7 @@ LIMIT 5 OFFSET 5;
 -- BETWEEN - IN - LIKE
 -- =====================================================
 
--- =========================================
 -- BETWEEN
--- CONSULTAR EQUIPOS CON CANTIDAD
--- ENTRE 5 Y 20
--- =========================================
 
 SELECT
     equipment_id,
@@ -216,10 +240,7 @@ SELECT
 FROM equipment
 WHERE quantity BETWEEN 5 AND 20;
 
--- =========================================
--- BETWEEN
--- CONSULTAR EVENTOS ENTRE FECHAS
--- =========================================
+-- BETWEEN FECHAS
 
 SELECT
     event_id,
@@ -228,10 +249,7 @@ SELECT
 FROM events
 WHERE event_date BETWEEN '2026-06-10' AND '2026-06-30';
 
--- =========================================
 -- IN
--- CONSULTAR EVENTOS TIPO FESTIVAL Y BODA
--- =========================================
 
 SELECT
     event_id,
@@ -240,10 +258,7 @@ SELECT
 FROM events
 WHERE event_type IN ('Festival', 'Boda');
 
--- =========================================
--- IN
--- CONSULTAR EQUIPOS DISPONIBLES Y EN USO
--- =========================================
+-- IN EQUIPOS
 
 SELECT
     equipment_id,
@@ -252,10 +267,7 @@ SELECT
 FROM equipment
 WHERE status IN ('available', 'in_use');
 
--- =========================================
--- LIKE
--- BUSCAR EVENTOS QUE EMPIECEN POR DJ
--- =========================================
+-- LIKE EVENTOS
 
 SELECT
     event_id,
@@ -263,10 +275,7 @@ SELECT
 FROM events
 WHERE name LIKE 'DJ%';
 
--- =========================================
--- LIKE
--- BUSCAR CLIENTES CON EL APELLIDO TORRES
--- =========================================
+-- LIKE CLIENTES
 
 SELECT
     client_id,
@@ -275,10 +284,7 @@ SELECT
 FROM clients
 WHERE name LIKE '%Torres%';
 
--- =========================================
 -- CONSULTA COMBINADA
--- BETWEEN + IN + LIKE
--- =========================================
 
 SELECT
     equipment_id,
@@ -291,3 +297,88 @@ WHERE quantity BETWEEN 5 AND 20
 AND category IN ('Sonido', 'DJ')
 AND name LIKE '%JBL%'
 ORDER BY quantity DESC;
+
+-- =====================================================
+-- SEMANA 6
+-- FUNCIONES DE AGREGACIÓN
+-- =====================================================
+
+-- =========================================
+-- COUNT
+-- TOTAL DE EVENTOS REGISTRADOS
+-- =========================================
+
+SELECT
+    COUNT(*) AS total_eventos
+FROM events;
+
+-- =========================================
+-- SUM Y AVG
+-- SUMA Y PROMEDIO DE EQUIPOS
+-- =========================================
+
+SELECT
+    SUM(quantity) AS suma_equipos,
+    AVG(quantity) AS promedio_equipos
+FROM equipment;
+
+-- =========================================
+-- GROUP BY
+-- CANTIDAD DE EVENTOS POR TIPO
+-- =========================================
+
+SELECT
+    event_type AS tipo_evento,
+    COUNT(event_id) AS cantidad_eventos
+FROM events
+GROUP BY event_type;
+
+-- =========================================
+-- GROUP BY
+-- CANTIDAD DE EQUIPOS POR ESTADO
+-- =========================================
+
+SELECT
+    status AS estado_equipo,
+    COUNT(equipment_id) AS cantidad
+FROM equipment
+GROUP BY status;
+
+-- =========================================
+-- HAVING
+-- TIPOS DE EVENTOS CON MÁS DE 1 REGISTRO
+-- =========================================
+
+SELECT
+    event_type AS tipo_evento,
+    COUNT(event_id) AS cantidad
+FROM events
+GROUP BY event_type
+HAVING COUNT(event_id) > 1;
+
+-- =========================================
+-- HAVING
+-- CATEGORÍAS CON PROMEDIO MAYOR A 5
+-- =========================================
+
+SELECT
+    category AS categoria,
+    AVG(quantity) AS promedio
+FROM equipment
+GROUP BY category
+HAVING AVG(quantity) > 5;
+
+-- =========================================
+-- REPORTE COMPLETO
+-- EVENTOS POR CLIENTE
+-- =========================================
+
+SELECT
+    clients.name AS cliente,
+    COUNT(events.event_id) AS total_eventos
+FROM clients
+LEFT JOIN events
+ON clients.client_id = events.client_id
+GROUP BY clients.name
+HAVING COUNT(events.event_id) >= 1
+ORDER BY total_eventos DESC;
